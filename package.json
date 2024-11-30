@@ -1,18 +1,22 @@
 {
   "name": "lc-scraper",
   "version": "1.0.0",
-  "description": "\"Utility to scrape out the leetcode problems\"",
-  "main": "index.js",
+  "description": "Utility to scrape out the leetcode problems",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
   },
-  "author": "",
+  "author": "Vishal Sharma",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.8",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "nodemon": "^3.1.7",
-    "selenium": "^2.20.0",
+    "openai": "^4.73.1",
     "selenium-webdriver": "^4.27.0"
   }
 }
