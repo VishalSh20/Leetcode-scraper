@@ -1,5 +1,5 @@
-import { Builder, By, until } from 'selenium-webdriver';
-import { chromeOptions } from "../../constants.js";
+import {By, until } from 'selenium-webdriver';
+import { driver } from '../../app.js';
 
 const problemFieldIndex = (field) => {
     switch (field) {
@@ -14,10 +14,16 @@ const problemFieldIndex = (field) => {
     }
 }
 
+function generateSlug(title) {
+    return title
+      .toLowerCase() // Convert to lowercase
+      .trim() // Trim whitespace from both ends
+      .replace(/[\s\W-]+/g, '-') // Replace spaces and non-word characters with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+}
+
 export default async function scrapeProblemSet(page) {
-    let driver;
     try {
-        driver = new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
         const requestURL = `https://leetcode.com/problemset/?page=${page}`;      
         await driver.get(requestURL);   
 
@@ -28,15 +34,18 @@ export default async function scrapeProblemSet(page) {
             return { error: "Page not available - check problem id" };
 
         const tableElementSelector = 'div[role="rowgroup"]';
-        await driver.wait(until.elementLocated(By.css(tableElementSelector)), 10000);
+        try {
+            await driver.wait(until.elementLocated(By.css(tableElementSelector)), 10000);
+        } catch (error) {
+            return {error:"Page does not exist"};
+        }
+
         let problemElements = await driver.findElements(By.css('div[role="row"]'));
         const totalProblems = problemElements.length;
         console.log(totalProblems);
 
         let problems = [];
         for (let i = 0; i < totalProblems - 1; i++) {
-            const rowElement = await driver.findElement(By.css(`div[role="row"]:nth-child(${i + 1})`));
-
             let currProblem = {};
             const problemFields = ["title", "acceptance", "difficulty"];
 
@@ -50,6 +59,7 @@ export default async function scrapeProblemSet(page) {
             }
             currProblem.index = currProblem.title.substring(0,currProblem.title.indexOf("."));
             currProblem.title = currProblem.title.substring(currProblem.title.indexOf(".")+1).trim();
+            currProblem.slug = generateSlug(currProblem.title);
             problems.push(currProblem);
         }
 
@@ -60,9 +70,5 @@ export default async function scrapeProblemSet(page) {
     } catch (error) {
         console.error("An error occurred:", error);
         return { error: error.message };
-    } finally {
-        if (driver) {
-            await driver.quit();
-        }
-    }
+    } 
 }
